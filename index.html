@@ -188,6 +188,29 @@
   .weapon-chip button:hover { color: var(--danger); }
   .muted { color: var(--muted); font-size: 12px; font-style: italic; }
   .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 12px; }
+  .mode-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .mode-toggle button {
+    padding: 6px 14px;
+    font-size: 12px;
+    background: var(--panel);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .mode-toggle button.active {
+    background: var(--accent);
+    color: #1a1a1f;
+    border-color: var(--accent);
+    font-weight: 700;
+  }
   .randomize-bar {
     text-align: center;
     padding: 16px 0;
@@ -286,6 +309,17 @@
     justify-content: flex-end;
     gap: 8px;
   }
+  .weapon-archetype { margin-bottom: 8px; }
+  .weapon-archetype > h3 {
+    margin: 16px 0 10px;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--fg);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+  .weapon-archetype:first-child > h3 { margin-top: 0; }
   .weapon-category { margin-bottom: 18px; }
   .weapon-category h4 {
     margin: 0 0 8px;
@@ -362,6 +396,11 @@
             <div>Composition: <span class="num" id="comp-count">0</span></div>
             <div>Players: <span class="num" id="players-count">0</span></div>
           </div>
+          <div class="mode-toggle">
+            <button class="active" data-mode="normal">Normal</button>
+            <button data-mode="no-dup-weapon">No Duplicate Weapons</button>
+            <button data-mode="no-dup-type">No Duplicate Types</button>
+          </div>
           <div class="randomize-bar">
             <button id="randomize-btn" class="big">Randomize Team</button>
           </div>
@@ -402,10 +441,10 @@
 (function () {
   const STORAGE_KEY = "albion_roles_v2";
 
-  // Build lookup: weaponId -> { name, icon, category }
+  // Build lookup: weaponId -> { name, icon, category, archetype }
   const WEAPON_INDEX = {};
-  WEAPON_CATALOG.forEach(([cat, list]) => {
-    list.forEach(w => { WEAPON_INDEX[w.id] = { ...w, category: cat }; });
+  WEAPON_CATALOG.forEach(([cat, list, archetype]) => {
+    list.forEach(w => { WEAPON_INDEX[w.id] = { ...w, category: cat, archetype }; });
   });
 
   const DEFAULT_ROLES = [
@@ -540,11 +579,22 @@
   function renderPickerBody() {
     const body = document.getElementById("picker-body");
     body.innerHTML = "";
-    WEAPON_CATALOG.forEach(([cat, list]) => {
+    let currentArchetype = null;
+    let archetypeEl = null;
+    WEAPON_CATALOG.forEach(([cat, list, archetype]) => {
+      if (archetype !== currentArchetype) {
+        currentArchetype = archetype;
+        archetypeEl = document.createElement("div");
+        archetypeEl.className = "weapon-archetype";
+        const h3 = document.createElement("h3");
+        h3.textContent = archetype;
+        archetypeEl.appendChild(h3);
+        body.appendChild(archetypeEl);
+      }
       const section = document.createElement("div");
       section.className = "weapon-category";
       const h4 = document.createElement("h4");
-      h4.textContent = `${cat} (${list.length})`;
+      h4.textContent = cat;
       section.appendChild(h4);
       const grid = document.createElement("div");
       grid.className = "weapon-grid";
@@ -561,7 +611,7 @@
         grid.appendChild(tile);
       });
       section.appendChild(grid);
-      body.appendChild(section);
+      archetypeEl.appendChild(section);
     });
     updatePickerCount();
   }
@@ -700,6 +750,7 @@
   }
 
   let spinTimer = null;
+  let randomizeMode = "normal";
 
   function randomize() {
     const resultArea = document.getElementById("result-area");
@@ -716,7 +767,7 @@
       return;
     }
 
-    // Count slots per role and ensure each role has enough unique weapons
+    // Validate all roles have weapons
     const roleSlotCount = {};
     composition.forEach(r => { roleSlotCount[r] = (roleSlotCount[r] || 0) + 1; });
     for (const roleName in roleSlotCount) {
@@ -725,21 +776,50 @@
         resultArea.innerHTML = `<div class="error">Role "${roleName}" has no weapons assigned.</div>`;
         return;
       }
-      if (role.weapons.length < roleSlotCount[roleName]) {
-        resultArea.innerHTML = `<div class="error">Role "${roleName}" needs ${roleSlotCount[roleName]} unique weapons but only has ${role.weapons.length}.</div>`;
-        return;
-      }
     }
 
-    // Sample unique weapons per role (no duplicates across slots of the same role)
-    const weaponPools = {};
-    for (const roleName in roleSlotCount) {
-      weaponPools[roleName] = shuffle(findRole(roleName).weapons).slice(0, roleSlotCount[roleName]);
+    let slotAssignments;
+
+    if (randomizeMode === "normal") {
+      // Each role picks independently; same weapon can appear multiple times
+      slotAssignments = composition.map(roleName => ({
+        role: roleName,
+        weapon: randomPick(findRole(roleName).weapons)
+      }));
+
+    } else if (randomizeMode === "no-dup-weapon") {
+      // No duplicate weapon IDs across the entire result
+      const usedWeapons = new Set();
+      slotAssignments = [];
+      for (const roleName of composition) {
+        const available = shuffle(findRole(roleName).weapons).filter(w => !usedWeapons.has(w));
+        if (available.length === 0) {
+          resultArea.innerHTML = `<div class="error">Not enough unique weapons for role "${roleName}" — all are already used.</div>`;
+          return;
+        }
+        const chosen = available[0];
+        usedWeapons.add(chosen);
+        slotAssignments.push({ role: roleName, weapon: chosen });
+      }
+
+    } else if (randomizeMode === "no-dup-type") {
+      // No duplicate weapon categories across the entire result
+      const usedCategories = new Set();
+      slotAssignments = [];
+      for (const roleName of composition) {
+        const available = shuffle(findRole(roleName).weapons).filter(w => {
+          const cat = WEAPON_INDEX[w]?.category;
+          return cat && !usedCategories.has(cat);
+        });
+        if (available.length === 0) {
+          resultArea.innerHTML = `<div class="error">Not enough unique weapon types for role "${roleName}" — all categories already used.</div>`;
+          return;
+        }
+        const chosen = available[0];
+        usedCategories.add(WEAPON_INDEX[chosen]?.category);
+        slotAssignments.push({ role: roleName, weapon: chosen });
+      }
     }
-    const slotAssignments = composition.map(roleName => ({
-      role: roleName,
-      weapon: weaponPools[roleName].pop()
-    }));
     const shuffledPlayers = shuffle(players);
 
     // Build table with spinning placeholder rows
@@ -823,6 +903,14 @@
   });
 
   document.getElementById("randomize-btn").onclick = randomize;
+
+  document.querySelectorAll(".mode-toggle button").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll(".mode-toggle button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      randomizeMode = btn.dataset.mode;
+    };
+  });
 
   document.getElementById("picker-close").onclick = closeWeaponPicker;
   document.getElementById("picker-done").onclick = applyPickerSelection;
