@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ARAM</title>
+<style>
+  :root {
+    --bg: #1a1a1f;
+    --panel: #26262e;
+    --panel-2: #30303a;
+    --border: #3d3d48;
+    --text: #e8e8ef;
+    --muted: #9a9aa8;
+    --accent: #d4a84a;
+    --accent-hover: #e6ba5c;
+    --danger: #c0503a;
+    --success: #5a9e5a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  h1 {
+    margin: 0 0 24px;
+    color: var(--accent);
+    text-align: center;
+  }
+  h2 {
+    margin: 0 0 12px;
+    font-size: 18px;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--border);
+  }
+  .tab {
+    background: transparent;
+    color: var(--muted);
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 0;
+  }
+  .tab:hover { color: var(--text); background: transparent; }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .layout .full { grid-column: 1 / -1; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .panel.wide { grid-column: 1 / -1; }
+  input[type="text"], select {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    font-size: 14px;
+    outline: none;
+  }
+  input[type="text"]:focus, select:focus {
+    border-color: var(--accent);
+  }
+  button {
+    background: var(--accent);
+    color: #1a1a1f;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  button:hover { background: var(--accent-hover); }
+  button.secondary {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  button.secondary:hover { background: var(--border); }
+  button.danger {
+    background: var(--danger);
+    color: #fff;
+  }
+  button.small {
+    padding: 3px 8px;
+    font-size: 12px;
+  }
+  button.big {
+    padding: 14px 28px;
+    font-size: 16px;
+  }
+  .row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .row input, .row select { flex: 1; min-width: 120px; }
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .list li {
+    background: var(--panel-2);
+    padding: 8px 10px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .role-card {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .role-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .role-name { font-weight: 600; color: var(--accent); }
+  .badge {
+    font-size: 11px;
+    background: var(--border);
+    color: var(--muted);
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+  }
+  .weapons-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .weapon-chip {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 3px 8px 3px 10px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .weapon-chip button {
+    background: transparent;
+    color: var(--muted);
+    padding: 0 2px;
+    font-size: 14px;
+  }
+  .weapon-chip button:hover { color: var(--danger); }
+  .muted { color: var(--muted); font-size: 12px; font-style: italic; }
+  .empty { color: var(--muted); font-size: 13px; text-align: center; padding: 12px; }
+  .randomize-bar {
+    text-align: center;
+    padding: 16px 0;
+  }
+  .result-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+  }
+  .result-table th, .result-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .result-table th {
+    color: var(--accent);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .error {
+    background: rgba(192, 80, 58, 0.15);
+    border: 1px solid var(--danger);
+    color: #eaa294;
+    padding: 10px 12px;
+    border-radius: 4px;
+    margin-top: 12px;
+    text-align: center;
+  }
+  .count-info {
+    display: flex;
+    justify-content: space-around;
+    background: var(--panel-2);
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    font-size: 13px;
+  }
+  .count-info .num { color: var(--accent); font-weight: 600; font-size: 16px; }
+
+  @keyframes rowSettle {
+    0%   { transform: scale(1.05); background: rgba(212, 168, 74, 0.35); box-shadow: 0 0 20px rgba(212, 168, 74, 0.5); }
+    100% { transform: scale(1); background: transparent; box-shadow: none; }
+  }
+  @keyframes spinBlur {
+    0%, 100% { filter: blur(0.6px); opacity: 0.85; }
+    50%      { filter: blur(1.2px); opacity: 1; }
+  }
+  .result-table tr.spinning td { animation: spinBlur 0.12s linear infinite; color: var(--muted); }
+  .result-table tr.settled    { animation: rowSettle 0.6s ease-out; }
+  .result-table tr.settled td { color: var(--text); font-weight: 600; }
+  .result-table img { width: 36px; height: 36px; vertical-align: middle; margin-right: 8px; }
+
+  /* Weapon chips with icons */
+  .weapon-chip.has-icon { padding: 4px 8px 4px 4px; }
+  .weapon-chip img { width: 24px; height: 24px; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header h3 { margin: 0; color: var(--accent); }
+  .modal-body {
+    padding: 14px 18px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .modal-footer {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .weapon-category { margin-bottom: 18px; }
+  .weapon-category h4 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+  }
+  .weapon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 6px;
+  }
+  .weapon-tile {
+    background: var(--panel-2);
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    padding: 6px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    transition: all 0.15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .weapon-tile:hover {
+    border-color: var(--accent-hover);
+    color: var(--text);
+  }
+  .weapon-tile.selected {
+    border-color: var(--accent);
+    background: rgba(212, 168, 74, 0.15);
+    color: var(--text);
+  }
+  .weapon-tile img { width: 48px; height: 48px; }
+  .weapon-tile .name { line-height: 1.2; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Albion Team Randomizer</h1>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="team">Team</button>
+      <button class="tab" data-tab="roles">Role Database</button>
+    </div>
+
+    <div class="tab-content active" id="tab-team">
+      <div class="layout">
+        <div class="panel">
+          <h2>Team Composition</h2>
+          <div class="row">
+            <select id="comp-role-select"></select>
+            <button id="add-slot-btn">Add Slot</button>
+          </div>
+          <ul id="composition-list" class="list"></ul>
+        </div>
+
+        <div class="panel">
+          <h2>Player Pool</h2>
+          <div class="row">
+            <input type="text" id="new-player-name" placeholder="Player name">
+            <button id="add-player-btn">Add Player</button>
+          </div>
+          <ul id="players-list" class="list"></ul>
+        </div>
+
+        <div class="panel full">
+          <h2>Randomize</h2>
+          <div class="count-info">
+            <div>Composition: <span class="num" id="comp-count">0</span></div>
+            <div>Players: <span class="num" id="players-count">0</span></div>
+          </div>
+          <div class="randomize-bar">
+            <button id="randomize-btn" class="big">Randomize Team</button>
+          </div>
+          <div id="result-area"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-roles">
+      <div class="panel">
+        <h2>Role Database</h2>
+        <div class="row">
+          <input type="text" id="new-role-name" placeholder="New role name">
+          <button id="add-role-btn">Add Role</button>
+        </div>
+        <div id="roles-container"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modal-overlay" id="weapon-picker">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Select weapons for <span id="picker-role-name"></span></h3>
+        <button class="secondary small" id="picker-close">Close</button>
+      </div>
+      <div class="modal-body" id="picker-body"></div>
+      <div class="modal-footer">
+        <span class="muted" id="picker-count" style="margin-right: auto; align-self: center;"></span>
+        <button id="picker-done">Done</button>
+      </div>
+    </div>
+  </div>
+
+<script src="weapons_data.js"></script>
+<script>
+(function () {
+  const STORAGE_KEY = "albion_roles_v2";
+
+  // Build lookup: weaponId -> { name, icon, category }
+  const WEAPON_INDEX = {};
+  WEAPON_CATALOG.forEach(([cat, list]) => {
+    list.forEach(w => { WEAPON_INDEX[w.id] = { ...w, category: cat }; });
+  });
+
+  const DEFAULT_ROLES = [
+    { name: "Tank",   preset: true, weapons: ["MAIN_MACE", "2H_MACE", "MAIN_HAMMER", "2H_HAMMER", "2H_QUARTERSTAFF", "2H_POLEHAMMER"] },
+    { name: "Healer", preset: true, weapons: ["MAIN_HOLYSTAFF", "2H_HOLYSTAFF", "2H_DIVINESTAFF", "MAIN_NATURESTAFF", "2H_NATURESTAFF", "2H_WILDSTAFF"] },
+    { name: "DPS",    preset: true, weapons: ["MAIN_DAGGER", "2H_DAGGERPAIR", "2H_BOW", "2H_WARBOW", "2H_FIRESTAFF", "2H_CROSSBOW", "2H_DUALSWORD", "2H_CLAYMORE"] }
+  ];
+
+  // state
+  let roles = loadRoles();
+  let composition = []; // array of role names
+  let players = [];
+  let pickerTargetRole = null;
+  let pickerSelection = new Set();
+
+  // --- storage ---
+  function loadRoles() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return DEFAULT_ROLES.map(r => ({ ...r, weapons: [...r.weapons] }));
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) throw new Error();
+      // Ensure all preset roles exist (re-add missing presets)
+      DEFAULT_ROLES.forEach(def => {
+        if (!parsed.find(r => r.name === def.name)) {
+          parsed.push({ ...def, weapons: [...def.weapons] });
+        }
+      });
+      return parsed;
+    } catch (e) {
+      return DEFAULT_ROLES.map(r => ({ ...r, weapons: [...r.weapons] }));
+    }
+  }
+  function saveRoles() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(roles));
+  }
+
+  // --- helpers ---
+  function getAllRoles() { return roles; }
+  function findRole(name) { return roles.find(r => r.name === name); }
+  function randomPick(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+  function shuffle(arr) {
+    const copy = arr.slice();
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  }
+
+  // --- renderers ---
+  function renderRoles() {
+    const container = document.getElementById("roles-container");
+    container.innerHTML = "";
+    getAllRoles().forEach(role => {
+      const card = document.createElement("div");
+      card.className = "role-card";
+
+      const header = document.createElement("div");
+      header.className = "role-header";
+      header.innerHTML = `<div><span class="role-name">${escapeHtml(role.name)}</span>${role.preset ? '<span class="badge">preset</span>' : ""}</div>`;
+      const actions = document.createElement("div");
+      const editBtn = document.createElement("button");
+      editBtn.className = "small";
+      editBtn.textContent = "Edit Weapons";
+      editBtn.onclick = () => openWeaponPicker(role.name);
+      actions.appendChild(editBtn);
+      if (!role.preset) {
+        const delBtn = document.createElement("button");
+        delBtn.className = "small danger";
+        delBtn.textContent = "Delete";
+        delBtn.style.marginLeft = "6px";
+        delBtn.onclick = () => deleteCustomRole(role.name);
+        actions.appendChild(delBtn);
+      }
+      header.appendChild(actions);
+      card.appendChild(header);
+
+      const weapons = document.createElement("div");
+      weapons.className = "weapons-list";
+      if (role.weapons.length === 0) {
+        weapons.innerHTML = '<span class="muted">No weapons yet — click Edit Weapons</span>';
+      } else {
+        role.weapons.forEach((wid, idx) => {
+          const meta = WEAPON_INDEX[wid];
+          const chip = document.createElement("span");
+          chip.className = "weapon-chip has-icon";
+          if (meta) {
+            const img = document.createElement("img");
+            img.src = meta.icon;
+            img.alt = meta.name;
+            chip.appendChild(img);
+            chip.appendChild(document.createTextNode(meta.name));
+          } else {
+            chip.textContent = wid;
+          }
+          const x = document.createElement("button");
+          x.textContent = "×";
+          x.title = "Remove weapon";
+          x.onclick = () => removeWeaponFromRole(role.name, idx);
+          chip.appendChild(x);
+          weapons.appendChild(chip);
+        });
+      }
+      card.appendChild(weapons);
+
+      container.appendChild(card);
+    });
+  }
+
+  // --- weapon picker modal ---
+  function openWeaponPicker(roleName) {
+    const role = findRole(roleName);
+    if (!role) return;
+    pickerTargetRole = roleName;
+    pickerSelection = new Set(role.weapons);
+    document.getElementById("picker-role-name").textContent = roleName;
+    renderPickerBody();
+    document.getElementById("weapon-picker").classList.add("active");
+  }
+  function closeWeaponPicker() {
+    document.getElementById("weapon-picker").classList.remove("active");
+    pickerTargetRole = null;
+  }
+  function renderPickerBody() {
+    const body = document.getElementById("picker-body");
+    body.innerHTML = "";
+    WEAPON_CATALOG.forEach(([cat, list]) => {
+      const section = document.createElement("div");
+      section.className = "weapon-category";
+      const h4 = document.createElement("h4");
+      h4.textContent = `${cat} (${list.length})`;
+      section.appendChild(h4);
+      const grid = document.createElement("div");
+      grid.className = "weapon-grid";
+      list.forEach(w => {
+        const tile = document.createElement("div");
+        tile.className = "weapon-tile" + (pickerSelection.has(w.id) ? " selected" : "");
+        tile.innerHTML = `<img src="${w.icon}" alt="${escapeHtml(w.name)}"><div class="name">${escapeHtml(w.name)}</div>`;
+        tile.onclick = () => {
+          if (pickerSelection.has(w.id)) pickerSelection.delete(w.id);
+          else pickerSelection.add(w.id);
+          tile.classList.toggle("selected");
+          updatePickerCount();
+        };
+        grid.appendChild(tile);
+      });
+      section.appendChild(grid);
+      body.appendChild(section);
+    });
+    updatePickerCount();
+  }
+  function updatePickerCount() {
+    document.getElementById("picker-count").textContent = `${pickerSelection.size} selected`;
+  }
+  function applyPickerSelection() {
+    const role = findRole(pickerTargetRole);
+    if (role) {
+      role.weapons = [...pickerSelection];
+      saveRoles();
+      renderRoles();
+    }
+    closeWeaponPicker();
+  }
+
+  function renderCompositionSelect() {
+    const sel = document.getElementById("comp-role-select");
+    const prev = sel.value;
+    sel.innerHTML = "";
+    getAllRoles().forEach(r => {
+      const opt = document.createElement("option");
+      opt.value = r.name;
+      opt.textContent = r.name;
+      sel.appendChild(opt);
+    });
+    if (prev && [...sel.options].some(o => o.value === prev)) {
+      sel.value = prev;
+    }
+  }
+
+  function renderComposition() {
+    const list = document.getElementById("composition-list");
+    list.innerHTML = "";
+    if (composition.length === 0) {
+      list.innerHTML = '<li class="empty">No slots added yet</li>';
+    } else {
+      composition.forEach((roleName, idx) => {
+        const li = document.createElement("li");
+        const label = document.createElement("span");
+        label.textContent = `Slot ${idx + 1}: ${roleName}`;
+        const btn = document.createElement("button");
+        btn.className = "small danger";
+        btn.textContent = "Remove";
+        btn.onclick = () => {
+          composition.splice(idx, 1);
+          renderComposition();
+          updateCounts();
+        };
+        li.appendChild(label);
+        li.appendChild(btn);
+        list.appendChild(li);
+      });
+    }
+    updateCounts();
+  }
+
+  function renderPlayers() {
+    const list = document.getElementById("players-list");
+    list.innerHTML = "";
+    if (players.length === 0) {
+      list.innerHTML = '<li class="empty">No players added yet</li>';
+    } else {
+      players.forEach((name, idx) => {
+        const li = document.createElement("li");
+        const label = document.createElement("span");
+        label.textContent = name;
+        const btn = document.createElement("button");
+        btn.className = "small danger";
+        btn.textContent = "Remove";
+        btn.onclick = () => {
+          players.splice(idx, 1);
+          renderPlayers();
+        };
+        li.appendChild(label);
+        li.appendChild(btn);
+        list.appendChild(li);
+      });
+    }
+    updateCounts();
+  }
+
+  function updateCounts() {
+    document.getElementById("comp-count").textContent = composition.length;
+    document.getElementById("players-count").textContent = players.length;
+  }
+
+  // --- actions ---
+  function addRole(name) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    if (findRole(trimmed)) {
+      alert(`Role "${trimmed}" already exists.`);
+      return;
+    }
+    roles.push({ name: trimmed, weapons: [], preset: false });
+    saveRoles();
+    renderRoles();
+    renderCompositionSelect();
+    openWeaponPicker(trimmed);
+  }
+
+  function deleteCustomRole(name) {
+    if (!confirm(`Delete role "${name}"?`)) return;
+    roles = roles.filter(r => r.name !== name);
+    composition = composition.filter(n => n !== name);
+    saveRoles();
+    renderRoles();
+    renderCompositionSelect();
+    renderComposition();
+  }
+
+  function removeWeaponFromRole(roleName, idx) {
+    const role = findRole(roleName);
+    if (!role) return;
+    role.weapons.splice(idx, 1);
+    saveRoles();
+    renderRoles();
+  }
+
+  function addSlot(roleName) {
+    if (!roleName) return;
+    composition.push(roleName);
+    renderComposition();
+  }
+
+  function addPlayer(name) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    if (players.includes(trimmed)) {
+      alert(`Player "${trimmed}" is already in the pool.`);
+      return;
+    }
+    players.push(trimmed);
+    renderPlayers();
+  }
+
+  let spinTimer = null;
+
+  function randomize() {
+    const resultArea = document.getElementById("result-area");
+    const btn = document.getElementById("randomize-btn");
+    if (spinTimer) { clearInterval(spinTimer); spinTimer = null; }
+    resultArea.innerHTML = "";
+
+    if (composition.length === 0) {
+      resultArea.innerHTML = '<div class="error">Add at least one role to the composition.</div>';
+      return;
+    }
+    if (players.length !== composition.length) {
+      resultArea.innerHTML = `<div class="error">Player count (${players.length}) must equal composition size (${composition.length}).</div>`;
+      return;
+    }
+
+    // Count slots per role and ensure each role has enough unique weapons
+    const roleSlotCount = {};
+    composition.forEach(r => { roleSlotCount[r] = (roleSlotCount[r] || 0) + 1; });
+    for (const roleName in roleSlotCount) {
+      const role = findRole(roleName);
+      if (!role || role.weapons.length === 0) {
+        resultArea.innerHTML = `<div class="error">Role "${roleName}" has no weapons assigned.</div>`;
+        return;
+      }
+      if (role.weapons.length < roleSlotCount[roleName]) {
+        resultArea.innerHTML = `<div class="error">Role "${roleName}" needs ${roleSlotCount[roleName]} unique weapons but only has ${role.weapons.length}.</div>`;
+        return;
+      }
+    }
+
+    // Sample unique weapons per role (no duplicates across slots of the same role)
+    const weaponPools = {};
+    for (const roleName in roleSlotCount) {
+      weaponPools[roleName] = shuffle(findRole(roleName).weapons).slice(0, roleSlotCount[roleName]);
+    }
+    const slotAssignments = composition.map(roleName => ({
+      role: roleName,
+      weapon: weaponPools[roleName].pop()
+    }));
+    const shuffledPlayers = shuffle(players);
+
+    // Build table with spinning placeholder rows
+    const table = document.createElement("table");
+    table.className = "result-table";
+    table.innerHTML = '<thead><tr><th>Player</th><th>Role</th><th>Weapon</th></tr></thead>';
+    const tbody = document.createElement("tbody");
+    for (let i = 0; i < slotAssignments.length; i++) {
+      const tr = document.createElement("tr");
+      tr.className = "spinning";
+      tr.innerHTML = "<td>—</td><td>—</td><td>—</td>";
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    resultArea.appendChild(table);
+
+    const allPlayers = players.slice();
+    const allRolesList = getAllRoles();
+    const allWeaponIds = allRolesList.flatMap(r => r.weapons);
+
+    btn.disabled = true;
+
+    function renderWeaponCell(cell, wid) {
+      const meta = WEAPON_INDEX[wid];
+      if (meta) {
+        cell.innerHTML = `<img src="${meta.icon}" alt="">${escapeHtml(meta.name)}`;
+      } else {
+        cell.textContent = wid || "—";
+      }
+    }
+
+    // Rapid cycling animation
+    spinTimer = setInterval(() => {
+      [...tbody.rows].forEach(tr => {
+        if (tr.classList.contains("settled")) return;
+        tr.cells[0].textContent = randomPick(allPlayers);
+        tr.cells[1].textContent = randomPick(allRolesList).name;
+        if (allWeaponIds.length) renderWeaponCell(tr.cells[2], randomPick(allWeaponIds));
+      });
+    }, 70);
+
+    // Settle rows one by one
+    const rows = [...tbody.rows];
+    rows.forEach((tr, i) => {
+      setTimeout(() => {
+        tr.classList.remove("spinning");
+        tr.classList.add("settled");
+        tr.cells[0].textContent = shuffledPlayers[i];
+        tr.cells[1].textContent = slotAssignments[i].role;
+        renderWeaponCell(tr.cells[2], slotAssignments[i].weapon);
+        if (i === rows.length - 1) {
+          clearInterval(spinTimer);
+          spinTimer = null;
+          btn.disabled = false;
+        }
+      }, 600 + i * 350);
+    });
+  }
+
+  // --- wire events ---
+  document.getElementById("add-role-btn").onclick = () => {
+    const input = document.getElementById("new-role-name");
+    addRole(input.value);
+    input.value = "";
+  };
+  document.getElementById("new-role-name").addEventListener("keydown", e => {
+    if (e.key === "Enter") document.getElementById("add-role-btn").click();
+  });
+
+  document.getElementById("add-slot-btn").onclick = () => {
+    addSlot(document.getElementById("comp-role-select").value);
+  };
+
+  document.getElementById("add-player-btn").onclick = () => {
+    const input = document.getElementById("new-player-name");
+    addPlayer(input.value);
+    input.value = "";
+  };
+  document.getElementById("new-player-name").addEventListener("keydown", e => {
+    if (e.key === "Enter") document.getElementById("add-player-btn").click();
+  });
+
+  document.getElementById("randomize-btn").onclick = randomize;
+
+  document.getElementById("picker-close").onclick = closeWeaponPicker;
+  document.getElementById("picker-done").onclick = applyPickerSelection;
+  document.getElementById("weapon-picker").addEventListener("click", (e) => {
+    if (e.target.id === "weapon-picker") closeWeaponPicker();
+  });
+
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+    };
+  });
+
+  // initial render
+  renderRoles();
+  renderCompositionSelect();
+  renderComposition();
+  renderPlayers();
+})();
+</script>
+</body>
+</html>
