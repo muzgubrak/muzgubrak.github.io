@@ -359,6 +359,45 @@
   }
   .weapon-tile img { width: 48px; height: 48px; }
   .weapon-tile .name { line-height: 1.2; }
+
+  /* Help tab */
+  .help-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 700px) {
+    .help-columns { grid-template-columns: 1fr; }
+  }
+  .help-panel h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .help-lang {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .help-section { margin-bottom: 20px; }
+  .help-section h3 {
+    font-size: 14px;
+    color: var(--accent);
+    margin: 0 0 6px;
+  }
+  .help-section p, .help-section ul {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.65;
+    margin: 0;
+  }
+  .help-section ul {
+    padding-left: 18px;
+  }
+  .help-section ul li { margin-bottom: 4px; }
+  .help-section strong { color: var(--fg); }
+  .help-section em { color: var(--fg); font-style: normal; }
 </style>
 </head>
 <body>
@@ -368,6 +407,7 @@
     <div class="tabs">
       <button class="tab active" data-tab="team">Team</button>
       <button class="tab" data-tab="roles">Role Database</button>
+      <button class="tab" data-tab="help">How to Use</button>
     </div>
 
     <div class="tab-content active" id="tab-team">
@@ -417,6 +457,78 @@
           <button id="add-role-btn">Add Role</button>
         </div>
         <div id="roles-container"></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-help">
+      <div class="help-columns">
+
+        <div class="panel help-panel">
+          <h2>How to Use <span class="help-lang">🇬🇧 English</span></h2>
+
+          <div class="help-section">
+            <h3>1. Build your composition</h3>
+            <p>Go to the <strong>Team</strong> tab. In the <em>Team Composition</em> panel, pick a role from the dropdown and click <strong>Add Slot</strong>. Add one slot per player — the total number of slots must match the number of players.</p>
+          </div>
+
+          <div class="help-section">
+            <h3>2. Add players</h3>
+            <p>In the <em>Player Pool</em> panel, type each player's name and press <strong>Add Player</strong> (or hit Enter). Players can be removed individually with the × button.</p>
+          </div>
+
+          <div class="help-section">
+            <h3>3. Choose a randomization mode</h3>
+            <ul>
+              <li><strong>Normal</strong> — weapons are picked freely; the same weapon may appear more than once.</li>
+              <li><strong>No Duplicate Weapons</strong> — every player receives a different weapon.</li>
+              <li><strong>No Duplicate Types</strong> — every player receives a weapon from a different category (e.g. only one Sword, one Bow, etc.).</li>
+            </ul>
+          </div>
+
+          <div class="help-section">
+            <h3>4. Randomize</h3>
+            <p>Click <strong>Randomize Team</strong>. Each player is assigned a role and a random weapon from that role's pool. The result animates row by row — click again at any time to re-roll.</p>
+          </div>
+
+          <div class="help-section">
+            <h3>5. Manage roles (Role Database tab)</h3>
+            <p>Three preset roles are provided: <strong>Tank</strong>, <strong>Healer</strong>, and <strong>DPS</strong>. You can add custom roles, then click <strong>Edit Weapons</strong> to choose which weapons belong to that role using the weapon picker. Preset roles always reset to their default weapons on reload.</p>
+          </div>
+        </div>
+
+        <div class="panel help-panel">
+          <h2>Jak używać <span class="help-lang">🇵🇱 Polski</span></h2>
+
+          <div class="help-section">
+            <h3>1. Zbuduj skład drużyny</h3>
+            <p>Przejdź do zakładki <strong>Team</strong>. W panelu <em>Team Composition</em> wybierz rolę z listy i kliknij <strong>Add Slot</strong>. Dodaj jeden slot na każdego gracza — łączna liczba slotów musi być równa liczbie graczy.</p>
+          </div>
+
+          <div class="help-section">
+            <h3>2. Dodaj graczy</h3>
+            <p>W panelu <em>Player Pool</em> wpisz imię gracza i naciśnij <strong>Add Player</strong> (lub Enter). Gracza można usunąć przyciskiem ×.</p>
+          </div>
+
+          <div class="help-section">
+            <h3>3. Wybierz tryb losowania</h3>
+            <ul>
+              <li><strong>Normal</strong> — bronie są losowane swobodnie; ta sama broń może trafić do kilku graczy.</li>
+              <li><strong>No Duplicate Weapons</strong> — każdy gracz otrzymuje inną broń.</li>
+              <li><strong>No Duplicate Types</strong> — każdy gracz otrzymuje broń z innej kategorii (np. tylko jeden Miecz, jeden Łuk itd.).</li>
+            </ul>
+          </div>
+
+          <div class="help-section">
+            <h3>4. Losuj</h3>
+            <p>Kliknij <strong>Randomize Team</strong>. Każdy gracz dostaje przypisaną rolę i losową broń z puli danej roli. Wynik animuje się rząd po rzędzie — kliknij ponownie, aby przelosować.</p>
+          </div>
+
+          <div class="help-section">
+            <h3>5. Zarządzaj rolami (zakładka Role Database)</h3>
+            <p>Dostępne są trzy domyślne role: <strong>Tank</strong>, <strong>Healer</strong> i <strong>DPS</strong>. Możesz dodawać własne role i klikając <strong>Edit Weapons</strong> wybrać, które bronie należą do danej roli. Domyślne role zawsze wracają do swoich standardowych broni po odświeżeniu strony.</p>
+          </div>
+        </div>
+
       </div>
     </div>
 
